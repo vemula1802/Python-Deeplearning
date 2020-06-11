@@ -1,0 +1,6 @@
+python is good
+good python
+
+python : 2
+is : 1
+good : 2
