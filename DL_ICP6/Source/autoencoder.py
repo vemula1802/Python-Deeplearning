@@ -49,11 +49,12 @@ plt.imshow(prediction.reshape(28,28))
 plt.title("Image Decoded")
 plt.show()
 
-# Bonus point
+# Bonus point to plot data after encoding
 encoder = Model(input_img, encoded)
 prediction = encoder.predict(x_test[2].reshape(1,784))
 plt.imshow(prediction.reshape(16,2))
 
+# Plot the graph for loss and accuracy
 plt.title("Image after encoding")
 plt.show()
 
