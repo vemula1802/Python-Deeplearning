@@ -1,0 +1,87 @@
+import tensorflow as tf
+from tensorflow import keras
+from tensorflow.keras import datasets, layers, models
+from tensorflow.keras.models import load_model
+
+import numpy as np
+import matplotlib.pyplot as plt
+from time import time
+from random import randint
+
+from keras.datasets import cifar10
+
+from keras.utils import np_utils
+from keras.constraints import maxnorm
+from keras.layers import Dense, Input
+from keras.layers import Dropout
+from keras.layers import Flatten
+from keras.optimizers import SGD
+from keras.models import Model
+from keras.callbacks import TensorBoard
+
+from keras import regularizers
+from keras import backend as K
+#Autoencoder with single encoding and decoding layers
+input_img = Input(shape=(3072,))
+encoded = Dense(32, activation='relu')(input_img)
+output_img = Dense(3072, activation='sigmoid')(encoded)
+# this model maps an input to its reconstruction
+autoencoder = Model(input_img, output_img)
+autoencoder.compile(optimizer='adadelta', loss='binary_crossentropy', metrics=['accuracy'])
+
+from keras.datasets import cifar10
+# Downloading dataset from internet
+(x_train,y_train), (x_test, y_test) = cifar10.load_data()
+#Normalizing the values from 0 to 255 == 0 to 1
+x_train = x_train.astype('float32')
+x_test = x_test.astype('float32')
+x_train = x_train / 255
+x_test = x_test / 255
+#Reshaping the data into 2d
+x_train = x_train.reshape((len(x_train), np.prod(x_train.shape[1:])))
+x_test = x_test.reshape((len(x_test), np.prod(x_test.shape[1:])))
+print(x_train.shape)
+print(x_test.shape)
+# Fitting the data to autoencoder
+history = autoencoder.fit(x_train, x_train,
+                epochs=10,
+                batch_size=256,
+                shuffle=True,
+                validation_data=(x_test, x_test))
+# Copying xtrain data and xtext data into new variables so as to use in the next step 
+x_train1 = x_train
+for k in range(0, 50000):
+  prediction = autoencoder.predict(x_train[k].reshape(1,3072))
+  x_train1[k] = prediction
+
+x_test1 = x_test.copy()
+for k in range(0, 10000):
+  prediction = autoencoder.predict(x_test[k].reshape(1,3072))
+  x_test1[k] = prediction
+
+
+x_train1 = np.array(x_train1).reshape([-1, 32, 32, 3]) x_test1 = np.array(x_test1).reshape([-1, 32, 32, 3]) print(x_train1.shape) print(x_test1.shape)
+#Preparing model for CNN model
+model = models.Sequential()
+model.add(layers.Conv2D(32, (3, 3), padding='same', activation='relu', input_shape=(32,32,3), kernel_constraint=maxnorm(3)))
+model.add(layers.Dropout(0.3))
+model.add(layers.Conv2D(32, (3, 3), activation='relu', padding='same', kernel_constraint=maxnorm(3)))
+model.add(layers.MaxPooling2D(pool_size=(2, 2)))
+model.add(layers.Flatten())
+model.add(layers.Dense(512, activation='relu', kernel_constraint=maxnorm(3)))
+model.add(layers.Dropout(0.5))
+model.add(layers.Dense(num_classes, activation='softmax'))
+epochs = 20
+lrate = 0.01
+decay = lrate/epochs
+sgd = keras.optimizers.SGD(lr=lrate, momentum=0.9, decay=decay, nesterov=False)
+model.compile(loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True), optimizer=sgd, metrics=['accuracy'])
+print(model.summary())
+print(x_test1.shape)
+print(x_train1.shape)
+print(y_test.shape)
+print(y_train.shape)
+
+history1 = model.fit(x_train1, y_train, validation_data=(x_test1, y_test), epochs=epochs, batch_size=32)
+scores = model.evaluate(x_test1, y_test, verbose=0)
+print("Accuracy: %.2f%%" % (scores[1]*100))

@@ -1,0 +1,10 @@
+Task 1 Data Set: https://umkc.app.box.com/s/nfaji3a8c86yfy5f4f9pzidmurvj82dz
+
+Task 2 Data Set: https://umkc.app.box.com/s/qhtpjz7hdb8vdzmwscp7alvs6ilt0zf2
+
+Task 3 Data Set: https://www.kaggle.com/slothkong/10-monkey-species
+
+Task 4 Data Set: https://umkc.app.box.com/s/v9d6l40pmqsu4x4h6edhvgxx8yn8h47d
+
+Task 5 Data Set: Cifar-10 data set
+
